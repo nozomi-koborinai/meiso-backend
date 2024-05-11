@@ -29,6 +29,9 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
+      - name: Change to Terraform Directory
+        run: cd terraform
+
       - name: Check Terraform Format
         run: terraform fmt -check -diff -recursive
 
