@@ -29,14 +29,13 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Change to Terraform Directory
-        run: cd terraform
-
       - name: Check Terraform Format
         run: terraform fmt -check -diff -recursive
+        working-directory: ./terraform
 
       - name: Initialize Terraform
         run: terraform init -input=false -backend-config="bucket=${{ secrets.BUCKET_NAME }}"
+        working-directory: ./terraform
 
       - name: Run Terraform Plan
         run: >
@@ -45,6 +44,7 @@ jobs:
           -var=project_id=${{ secrets.PROJECT_ID }} 
           -var=project_name=${{ secrets.PROJECT_ID }} 
           -var=billing_account=${{ secrets.BILLING_ACCOUNT }}
+        working-directory: ./terraform
 
       - name: Run Terraform Apply
         run: >
@@ -53,3 +53,4 @@ jobs:
           -var=project_id=${{ secrets.PROJECT_ID }} 
           -var=project_name=${{ secrets.PROJECT_ID }} 
           -var=billing_account=${{ secrets.BILLING_ACCOUNT }}
+        working-directory: ./terraform
