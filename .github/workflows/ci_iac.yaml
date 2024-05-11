@@ -1,0 +1,45 @@
+name: Terraform CI
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    timeout-minutes: 60
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER_TERRAFORM }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT_MAIL_TERRAFORM }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Check Terraform Format
+        run: terraform fmt -check -diff -recursive
+
+      - name: Initialize Terraform
+        run: terraform init -input=false -backend-config="bucket=${{ secrets.BUCKET_NAME }}"
+
+      - name: Run Terraform Plan
+        run: >
+          terraform plan 
+          -lock-timeout=120s 
+          -var=project_id=${{ secrets.PROJECT_ID }} 
+          -var=project_name=${{ secrets.PROJECT_ID }} 
+          -var=billing_account=${{ secrets.BILLING_ACCOUNT }} 
